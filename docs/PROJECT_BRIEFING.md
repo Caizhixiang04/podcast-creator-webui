@@ -7,7 +7,7 @@
 | `web/` | **产品 Web**：Next.js 14（App Router）+ TypeScript + Tailwind + shadcn/ui |
 | `debug/streamlit_app.py` | **调试面板占位**：Streamlit 仅用于内部调试，不作为产品主路径 |
 | `openspec/` | OpenSpec：变更提案与规格（本里程碑变更 `m0-webui-dashboard-sse-cicd`） |
-| `.github/workflows/ci.yml` | CI：Lint → Test → Build；`main` 推送后 Deploy（Vercel） |
+| `.github/workflows/ci.yml` | CI：Lint → Typecheck → Test → Build；配置了变量后 `main` 才跑 Vercel Deploy |
 
 ## 本地开发
 
@@ -32,13 +32,15 @@ npm run build
 ## CI/CD 与 Staging
 
 1. 在 Vercel 创建项目，根目录指向 `web`（或在 Vercel 项目设置中配置）。
-2. 在 GitHub 仓库 **Settings → Secrets and variables → Actions** 配置：
+2. 同上路径，先配置 **Secrets**：
 
-   - `VERCEL_TOKEN`
-   - `VERCEL_ORG_ID`
-   - `VERCEL_PROJECT_ID`
+   - `VERCEL_TOKEN` — Vercel Account → Tokens
+   - `VERCEL_ORG_ID` — 一般在项目 `.vercel/project.json` 或 Vercel 团队设置可见
+   - `VERCEL_PROJECT_ID` — 同上
 
-3. `main` 推送后，工作流 `deploy-vercel` 执行 `vercel deploy`。**若 secrets 未配置，部署步骤将失败**；这与「需要 Staging URL」的验收一致——需由运维/负责人在托管侧完成一次性接入。
+3. **Repository variables**：**Settings → Secrets and variables → Actions → Variables** 新增 **`VERCEL_CI_DEPLOY`** = **`true`**。未设置或为 `false` 时，`deploy-vercel` 任务会被跳过——避免在 secrets 未就绪时把整个 CI 标红。
+
+4. 设置完成后，`main` 推送会附带 `deploy-vercel`：`npx vercel@33 deploy`。
 
 ## 相关文档
 

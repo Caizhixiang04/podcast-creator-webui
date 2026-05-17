@@ -42,7 +42,13 @@ jobs:
 
   deploy-vercel:
     needs: lint-test-build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Skip until GitHub Secrets (VERCEL_*) exist. After configuring them, create
+    # repo variable Actions → Variables → Repository variables:
+    #   VERCEL_CI_DEPLOY = true
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      vars.VERCEL_CI_DEPLOY == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     defaults:
